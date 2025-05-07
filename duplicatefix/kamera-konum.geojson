@@ -1,0 +1,136 @@
+{
+  "type": "FeatureCollection",
+  "name": "kameralar",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.49844282153692,
+          37.87337484658136
+        ]
+      },
+      "properties": {
+        "kamera_adi": "Şerafettin Cami"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.48803446137015,
+          37.946363857949784
+        ]
+      },
+      "properties": {
+        "kamera_adi": "Konya Büyükşehir Stadyumu"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.50927355442301,
+          37.870601605939804
+        ]
+      },
+      "properties": {
+        "kamera_adi": "İstiklal Harbi Şehitleri Abidesi"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.492889725088865,
+          37.873397693040694
+        ]
+      },
+      "properties": {
+        "kamera_adi": "Alaaddin Keykubad Cami"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.489147273171454,
+          37.87512863941936
+        ]
+      },
+      "properties": {
+        "kamera_adi": "Kültürpark"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.51591693248606,
+          37.86941005979901
+        ]
+      },
+      "properties": {
+        "kamera_adi": "Mevlana Kültür Merkezi"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.55911353622763,
+          37.95752461372053
+        ]
+      },
+      "properties": {
+        "kamera_adi": "Türk Yıldızları Parkı"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.49530797527702,
+          37.903875731302016
+        ]
+      },
+      "properties": {
+        "kamera_adi": "Kent Plaza Kavşağı"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.49497154552668,
+          37.88785288253043
+        ]
+      },
+      "properties": {
+        "kamera_adi": "Kule Kavşağı"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.234385889665866,
+          37.79033043230617
+        ]
+      },
+      "properties": {
+        "kamera_adi": "Hayvan Bakım Evi - 4"
+      }
+    }
+  ]
+}
