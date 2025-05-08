@@ -4,16 +4,7 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 import Markers from './components/Markers';
 import * as turf from '@turf/turf';
 import LocationPopup from './components/LocationPopup';
-
-interface Location {
-  id: number;
-  type: 'Park' | 'Cami' | 'Sağlık Tesisi' | 'Okul' | 'Tatlı Su Çeşmesi' | 'Eczane' | 'Toplanma Alanı' | 'Bisiklet Park Alanı' | 'Paylaşımlı Bisiklet İstasyonu' | 'Otopark' | 'Hava Ölçüm İstasyonu' | 'Kamera';
-  latitude: number;
-  longitude: number;
-  name?: string;
-  occupiedSpaces?: number;
-  cameraUrl?: string;
-}
+import { Location } from './types/Location';
 
 interface ViewState {
   latitude: number;
@@ -324,24 +315,25 @@ const App: React.FC = () => {
   // GeoJSON feature'dan konum bilgisi çıkar
   const extractLocation = (feature: any, type: Location['type']): Location => {
     let name = '';
+    let occupiedSpaces: number | undefined;
     
     // Veri setine göre isim alanını belirle
     if (type === 'Eczane') {
-      name = feature.properties.ADI;
+      name = feature.properties.ADI || 'İsimsiz Eczane';
     } else if (type === 'Okul' || type === 'Sağlık Tesisi' || type === 'Bisiklet Park Alanı' || type === 'Cami') {
-      name = feature.properties.NITELIK_AD || feature.properties.niteliK_AD;
+      name = feature.properties.NITELIK_AD || feature.properties.niteliK_AD || 'İsimsiz Tesis';
     } else if (type === 'Toplanma Alanı') {
-      name = feature.properties.ADI;
+      name = feature.properties.ADI || 'İsimsiz Toplanma Alanı';
     } else if (type === 'Otopark') {
-      name = feature.properties.name;
+      name = feature.properties.name || 'İsimsiz Otopark';
     } else if (type === 'Park') {
-      name = `${feature.properties.ILCEADI} - ${feature.properties.UST_NITELIK_ADI}`;
+      name = `${feature.properties.ILCEADI || 'Bilinmeyen İlçe'} - ${feature.properties.UST_NITELIK_ADI || 'İsimsiz Park'}`;
     } else if (type === 'Paylaşımlı Bisiklet İstasyonu') {
-      name = feature.properties.NITELIK_AD || feature.properties.niteliK_AD;
+      name = feature.properties.NITELIK_AD || feature.properties.niteliK_AD || 'İsimsiz İstasyon';
     } else if (type === 'Tatlı Su Çeşmesi') {
-      name = feature.properties.ACIKLAMA;
+      name = feature.properties.ACIKLAMA || 'İsimsiz Çeşme';
     } else if (type === 'Hava Ölçüm İstasyonu' || type === 'Kamera') {
-      name = feature.properties.NITELIK_AD || feature.properties.niteliK_AD;
+      name = feature.properties.NITELIK_AD || feature.properties.niteliK_AD || 'İsimsiz İstasyon';
       if (type === 'Kamera') {
         return {
           id: Math.random(),
@@ -349,7 +341,7 @@ const App: React.FC = () => {
           longitude: feature.geometry.coordinates[0],
           latitude: feature.geometry.coordinates[1],
           name,
-          cameraUrl: feature.properties.url
+          cameraUrl: feature.properties.url || ''
         };
       }
     }
@@ -360,7 +352,8 @@ const App: React.FC = () => {
         type,
         longitude: feature.geometry.coordinates[0],
         latitude: feature.geometry.coordinates[1],
-        name
+        name,
+        occupiedSpaces
       };
     } else if (feature.geometry.type === 'Polygon') {
       const center = calculatePolygonCenter(feature.geometry.coordinates);
@@ -369,7 +362,8 @@ const App: React.FC = () => {
         type,
         longitude: center[0],
         latitude: center[1],
-        name
+        name,
+        occupiedSpaces
       };
     } else {
       throw new Error(`Desteklenmeyen geometri tipi: ${feature.geometry.type}`);

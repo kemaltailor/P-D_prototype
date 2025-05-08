@@ -20,6 +20,7 @@ namespace KonyaKBS.API.Data
         public DbSet<KiralikBisikletKonumu> KiralikBisikletKonumlari { get; set; }
         public DbSet<HavaKaliteIstasyon> HavaKaliteIstasyon { get; set; }
         public DbSet<Kamera> Kameralar { get; set; }
+        public DbSet<HavaKaliteGunlukOrtalama> HavaKaliteGunlukOrtalamalar { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -109,6 +110,15 @@ namespace KonyaKBS.API.Data
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.Name).IsRequired();
                 entity.Property(e => e.Location).HasColumnType("geometry(Point, 4326)");
+            });
+
+            modelBuilder.Entity<HavaKaliteGunlukOrtalama>(entity =>
+            {
+                entity.HasNoKey();
+                entity.Property(e => e.no).HasColumnType("double precision");
+                entity.Property(e => e.no2).HasColumnType("double precision");
+                entity.Property(e => e.nox).HasColumnType("double precision");
+                entity.Property(e => e.pm10).HasColumnType("double precision");
             });
         }
     }

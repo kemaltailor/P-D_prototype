@@ -3,24 +3,27 @@ using KonyaKBS.API.Data;
 using NetTopologySuite.IO;
 using NetTopologySuite.Geometries;
 using NetTopologySuite;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"),
-        x => x.UseNetTopologySuite()));
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+    });
 
-builder.Services.AddDbContext<KonyaKBSContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"),
-        x => x.UseNetTopologySuite()));
-
-builder.Services.AddControllers();
-
-// NetTopologySuite servislerinin eklenmesi
-builder.Services.AddSingleton(NtsGeometryServices.Instance);
-builder.Services.AddSingleton<GeoJsonReader>();
-builder.Services.AddSingleton<GeoJsonWriter>();
+// CORS politikasını ekle
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(builder =>
+    {
+        builder.AllowAnyOrigin()
+               .AllowAnyMethod()
+               .AllowAnyHeader();
+    });
+});
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -39,17 +42,15 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-// Configure CORS
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowAll",
-        builder =>
-        {
-            builder.AllowAnyOrigin()
-                   .AllowAnyMethod()
-                   .AllowAnyHeader();
-        });
-});
+// PostgreSQL ve PostGIS için DbContext yapılandırması
+builder.Services.AddDbContext<KonyaKBSContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"),
+        x => x.UseNetTopologySuite()));
+
+// NetTopologySuite servislerinin eklenmesi
+builder.Services.AddSingleton(NtsGeometryServices.Instance);
+builder.Services.AddSingleton<GeoJsonReader>();
+builder.Services.AddSingleton<GeoJsonWriter>();
 
 var app = builder.Build();
 
@@ -60,9 +61,14 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+// CORS middleware'ini en başta ekle
+app.UseCors();
 
-app.UseCors("AllowAll");
+// Sadece production ortamında HTTPS yönlendirmesi yap
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 
 app.UseAuthorization();
 
