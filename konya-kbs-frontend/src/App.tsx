@@ -5,6 +5,10 @@ import Markers from './components/Markers';
 import * as turf from '@turf/turf';
 import LocationPopup from './components/LocationPopup';
 import { Location } from './types/Location';
+import { Pie } from 'react-chartjs-2';
+import Chart from 'chart.js/auto';
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
+ChartJS.register(ArcElement, Tooltip, Legend);
 
 interface ViewState {
   latitude: number;
@@ -45,6 +49,22 @@ const calculatePolygonCenter = (coordinates: number[][][]): [number, number] => 
   });
 
   return [sumLon / points.length, sumLat / points.length];
+};
+
+const MARKER_COLORS: Record<string, string> = {
+  'Park': '#22c55e',
+  'Cami': '#a21caf',
+  'Sağlık Tesisi': '#ef4444',
+  'Okul': '#3b82f6',
+  'Tatlı Su Çeşmesi': '#06b6d4',
+  'Eczane': '#f59e42',
+  'Toplanma Alanı': '#eab308',
+  'Bisiklet Park Alanı': '#fde047',
+  'Paylaşımlı Bisiklet İstasyonu': '#15803d',
+  'Otopark': '#2563eb',
+  'Hava Ölçüm İstasyonu': '#ec4899',
+  'Kamera': '#6366f1',
+  'Tarihi/Turistik Yerler': '#a21caf'
 };
 
 const App: React.FC = () => {
@@ -89,6 +109,25 @@ const App: React.FC = () => {
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
 
   const [parkingOccupancies, setParkingOccupancies] = useState<Record<number, number>>({});
+
+  const [isDetailPanelOpen, setIsDetailPanelOpen] = useState(false);
+  const [panelWidth, setPanelWidth] = useState(400);
+
+  // Çeperdeki konumları ve tür sayılarını hesapla
+  const getCircleStats = () => {
+    if (!circleData) return { total: 0, typeCounts: {}, inside: [] };
+    // SADECE filtrede aktif olan türleri al
+    const filtered = locations.filter(loc => filters[loc.type]);
+    const inside = filtered.filter(loc =>
+      turf.booleanPointInPolygon([loc.longitude, loc.latitude], circleData)
+    );
+    const typeCounts: Record<string, number> = {};
+    inside.forEach(loc => {
+      typeCounts[loc.type] = (typeCounts[loc.type] || 0) + 1;
+    });
+    return { total: inside.length, typeCounts, inside };
+  };
+  const circleStats = getCircleStats();
 
   // Bounds'u güncelle
   const updateBounds = useCallback(() => {
@@ -507,7 +546,141 @@ const App: React.FC = () => {
             parkingOccupancies={parkingOccupancies}
           />
         )}
+        {(circleData && hoverInfo) && (
+          <Popup
+            longitude={hoverInfo.longitude}
+            latitude={hoverInfo.latitude}
+            anchor="top"
+            closeButton={false}
+            closeOnClick={false}
+            offset={[0, -10] as [number, number]}
+            style={{ zIndex: 20 }}
+          >
+            <div className="bg-white rounded-lg shadow-lg p-4 min-w-[220px] max-w-xs flex flex-col items-center">
+              <Pie
+                data={{
+                  labels: Object.keys(circleStats.typeCounts),
+                  datasets: [{
+                    data: Object.values(circleStats.typeCounts),
+                    backgroundColor: Object.keys(circleStats.typeCounts).map(t => MARKER_COLORS[t] || '#888'),
+                    borderWidth: 1
+                  }]
+                }}
+                options={{ plugins: { legend: { display: true, position: 'bottom' } } }}
+                width={180}
+                height={180}
+              />
+              <div className="mt-2 text-center text-sm font-medium">
+                Toplam: {circleStats.total} konum
+              </div>
+              <button
+                className="mt-2 px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+                onClick={() => setIsDetailPanelOpen(true)}
+              >
+                Ayrıntılı Gör
+              </button>
+            </div>
+          </Popup>
+        )}
       </Map>
+      {/* Sağda açılan panel */}
+      {isDetailPanelOpen && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            right: 0,
+            height: '100vh',
+            width: panelWidth,
+            background: '#fff',
+            zIndex: 50,
+            boxShadow: '-2px 0 8px rgba(0,0,0,0.08)',
+            display: 'flex',
+            flexDirection: 'column',
+            borderLeft: '1px solid #eee'
+          }}
+        >
+          {/* Sürüklenebilir orta çizgi */}
+          <div
+            style={{
+              position: 'absolute',
+              left: -6,
+              top: 0,
+              width: 12,
+              height: '100%',
+              cursor: 'ew-resize',
+              zIndex: 100
+            }}
+            onMouseDown={e => {
+              const startX = e.clientX;
+              const startWidth = panelWidth;
+              const onMove = (ev: MouseEvent) => {
+                setPanelWidth(Math.max(300, startWidth - (ev.clientX - startX)));
+              };
+              const onUp = () => {
+                window.removeEventListener('mousemove', onMove);
+                window.removeEventListener('mouseup', onUp);
+              };
+              window.addEventListener('mousemove', onMove);
+              window.addEventListener('mouseup', onUp);
+            }}
+          >
+            <div style={{ width: 12, height: '100%', background: 'transparent' }} />
+          </div>
+          <div className="p-6 flex-1 overflow-y-auto">
+            <div className="flex flex-col items-center">
+              <Pie
+                data={{
+                  labels: Object.keys(circleStats.typeCounts),
+                  datasets: [{
+                    data: Object.values(circleStats.typeCounts),
+                    backgroundColor: Object.keys(circleStats.typeCounts).map(t => MARKER_COLORS[t] || '#888'),
+                    borderWidth: 1
+                  }]
+                }}
+                options={{ plugins: { legend: { display: true, position: 'bottom' } } }}
+                width={220}
+                height={220}
+              />
+              <div className="mt-4 w-full">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr>
+                      <th className="text-left">&nbsp;</th>
+                      <th className="text-left">Konum Türü</th>
+                      <th className="text-right">Adet</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {Object.entries(circleStats.typeCounts).map(([type, count]) => (
+                      <tr key={type}>
+                        <td>
+                          <span style={{
+                            display: 'inline-block',
+                            width: 16,
+                            height: 16,
+                            borderRadius: 8,
+                            background: MARKER_COLORS[type] || '#888',
+                            marginRight: 8
+                          }} />
+                        </td>
+                        <td>{type}</td>
+                        <td className="text-right font-semibold">{count}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <button
+              className="mt-6 px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 transition"
+              onClick={() => setIsDetailPanelOpen(false)}
+            >
+              Kapat
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
