@@ -4,6 +4,10 @@ using NetTopologySuite.IO;
 using NetTopologySuite.Geometries;
 using NetTopologySuite;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using KonyaKBS.API.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -47,10 +51,31 @@ builder.Services.AddDbContext<KonyaKBSContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"),
         x => x.UseNetTopologySuite()));
 
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"),
+        x => x.UseNetTopologySuite()));
+
 // NetTopologySuite servislerinin eklenmesi
 builder.Services.AddSingleton(NtsGeometryServices.Instance);
 builder.Services.AddSingleton<GeoJsonReader>();
 builder.Services.AddSingleton<GeoJsonWriter>();
+
+builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        var jwtSettings = builder.Configuration.GetSection("JwtSettings").Get<JwtSettings>();
+        var key = Encoding.ASCII.GetBytes(jwtSettings.SecretKey);
+
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(key),
+            ValidateIssuer = false,
+            ValidateAudience = false
+        };
+    });
 
 var app = builder.Build();
 
@@ -70,6 +95,7 @@ if (!app.Environment.IsDevelopment())
     app.UseHttpsRedirection();
 }
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

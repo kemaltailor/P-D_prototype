@@ -8,6 +8,9 @@ import { Location } from './types/Location';
 import { Pie } from 'react-chartjs-2';
 import Chart from 'chart.js/auto';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import AdminLogin from './pages/AdminLogin';
+import KonumEkle from './pages/KonumEkle';
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 interface ViewState {
@@ -82,6 +85,7 @@ const App: React.FC = () => {
   const [locations, setLocations] = useState<Location[]>([]); 
   const [isLoading, setIsLoading] = useState(true);
   const [isClusterMode, setIsClusterMode] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const [filters, setFilters] = useState({
     'Park': false,
@@ -433,255 +437,312 @@ const App: React.FC = () => {
     return locations.filter(location => filters[location.type]);
   }, [locations, filters]);
 
+  const handleLogout = () => {
+    localStorage.removeItem('adminToken');
+    setIsLoggedIn(false);
+  };
+
+  const handleMarkerClick = (location: Location) => {
+    setSelectedLocation(location);
+  };
+
   return (
-    <div className="h-screen flex">
-      <div className="absolute top-4 right-4 bg-white p-4 rounded-lg shadow-lg max-h-[calc(100vh-32px)] overflow-y-auto z-10">
-        <h2 className="text-lg font-semibold mb-4">Konum Türleri</h2>
-        {LOCATION_TYPES.map(type => (
-          <label key={type} className="flex items-center mb-2">
-            <input
-              type="checkbox"
-              checked={filters[type as keyof typeof filters]}
-              onChange={() => toggleFilter(type)}
-              className="mr-2"
-            />
-            {type}
-          </label>
-        ))}
-        {!isLoading && locations.length > 0 && (
-          <div className={`mt-4 pt-4 border-t transition-all duration-300 ${viewState.zoom < 14 ? 'opacity-50 pointer-events-none filter blur-[1px]' : ''}`}>
-            <label className="flex items-center justify-between cursor-pointer">
-              <span className="text-sm font-medium">Kümeleme Modu</span>
-              <div className="relative">
-                <input
-                  type="checkbox"
-                  checked={isClusterMode}
-                  onChange={e => setIsClusterMode(e.target.checked)}
-                  className="sr-only peer"
-                  disabled={viewState.zoom < 14}
-                />
-                <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-              </div>
-            </label>
-          </div>
-        )}
-      </div>
-
-      {/* Çember Çiz Butonu */}
-      <button
-        onClick={() => {
-          if (isDrawing) {
-            exitDrawMode();
-          } else {
-            setIsDrawing(true);
-            setCircleData(null);
-          }
-        }}
-        className={`absolute top-4 left-16 z-10 p-2 rounded-lg shadow-lg transition-colors ${
-          isDrawing ? 'bg-red-500 text-white' : 'bg-white text-gray-800'
-        }`}
-        title={isDrawing ? 'Çizimi İptal Et (Ctrl+Shift)' : 'Çeper Çiz'}
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-        </svg>
-      </button>
-
-      <Map
-        ref={mapRef}
-        {...viewState}
-        onMove={onMove}
-        onMouseDown={handleMouseDown}
-        onMouseMove={(e) => {
-          handleMouseMove(e);
-          handleHover(e);
-        }}
-        onMouseUp={handleMouseUp}
-        style={{ width: '100%', height: '100%' }}
-        mapStyle="mapbox://styles/mapbox/streets-v11"
-        mapboxAccessToken={MAPBOX_TOKEN}
-        cursor={isDrawing ? 'crosshair' : 'auto'}
-        dragPan={!isDragging}
-        dragRotate={!isDragging}
-        scrollZoom={!isDrawing}
-        doubleClickZoom={false}
-        touchZoomRotate={!isDrawing}
-        interactiveLayerIds={isDrawing ? [] : undefined}
-        onClick={() => setSelectedLocation(null)}
-      >
-        <NavigationControl position="top-left" />
-        <Markers
-          locations={filteredLocations}
-          filters={filters}
-          bounds={bounds}
-          zoom={viewState.zoom}
-          isClusterMode={isClusterMode}
-          onMarkerClick={setSelectedLocation}
-          mapRef={mapRef}
-        />
-        {(previewCircle || circleData) && (
-          <Source id="circle-source" type="geojson" data={previewCircle || circleData}>
-            <Layer
-              id="circle-fill"
-              type="fill"
-              paint={{
-                'fill-color': '#007cbf',
-                'fill-opacity': 0.3,
-              }}
-            />
-            <Layer
-              id="circle-outline"
-              type="line"
-              paint={{
-                'line-color': '#007cbf',
-                'line-width': 2,
-              }}
-            />
-          </Source>
-        )}
-        {selectedLocation && (
-          <LocationPopup
-            location={selectedLocation}
-            onClose={() => setSelectedLocation(null)}
-            parkingOccupancies={parkingOccupancies}
-          />
-        )}
-        {(circleData && hoverInfo) && (
-          <Popup
-            longitude={hoverInfo.longitude}
-            latitude={hoverInfo.latitude}
-            anchor="top"
-            closeButton={false}
-            closeOnClick={false}
-            offset={[0, -10] as [number, number]}
-            style={{ zIndex: 20 }}
-          >
-            <div className="bg-white rounded-lg shadow-lg p-4 min-w-[220px] max-w-xs flex flex-col items-center">
-              <Pie
-                data={{
-                  labels: Object.keys(circleStats.typeCounts),
-                  datasets: [{
-                    data: Object.values(circleStats.typeCounts),
-                    backgroundColor: Object.keys(circleStats.typeCounts).map(t => MARKER_COLORS[t] || '#888'),
-                    borderWidth: 1
-                  }]
-                }}
-                options={{ plugins: { legend: { display: true, position: 'bottom' } } }}
-                width={180}
-                height={180}
-              />
-              <div className="mt-2 text-center text-sm font-medium">
-                Toplam: {circleStats.total} konum
-              </div>
+    <Router>
+      <Routes>
+        <Route path="/admin/login" element={<AdminLogin onLoginSuccess={() => setIsLoggedIn(true)} />} />
+        <Route path="/admin/konum-ekle" element={<KonumEkle />} />
+        <Route path="/" element={
+          <div className="h-screen flex">
+            {/* Üst menü */}
+            <div className="absolute top-4 left-4 z-10 flex gap-2">
+              {/* Çeper Çiz Butonu */}
               <button
-                className="mt-2 px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
-                onClick={() => setIsDetailPanelOpen(true)}
-              >
-                Ayrıntılı Gör
-              </button>
-            </div>
-          </Popup>
-        )}
-      </Map>
-      {/* Sağda açılan panel */}
-      {isDetailPanelOpen && (
-        <div
-          style={{
-            position: 'fixed',
-            top: 0,
-            right: 0,
-            height: '100vh',
-            width: panelWidth,
-            background: '#fff',
-            zIndex: 50,
-            boxShadow: '-2px 0 8px rgba(0,0,0,0.08)',
-            display: 'flex',
-            flexDirection: 'column',
-            borderLeft: '1px solid #eee'
-          }}
-        >
-          {/* Sürüklenebilir orta çizgi */}
-          <div
-            style={{
-              position: 'absolute',
-              left: -6,
-              top: 0,
-              width: 12,
-              height: '100%',
-              cursor: 'ew-resize',
-              zIndex: 100
-            }}
-            onMouseDown={e => {
-              const startX = e.clientX;
-              const startWidth = panelWidth;
-              const onMove = (ev: MouseEvent) => {
-                setPanelWidth(Math.max(300, startWidth - (ev.clientX - startX)));
-              };
-              const onUp = () => {
-                window.removeEventListener('mousemove', onMove);
-                window.removeEventListener('mouseup', onUp);
-              };
-              window.addEventListener('mousemove', onMove);
-              window.addEventListener('mouseup', onUp);
-            }}
-          >
-            <div style={{ width: 12, height: '100%', background: 'transparent' }} />
-          </div>
-          <div className="p-6 flex-1 overflow-y-auto">
-            <div className="flex flex-col items-center">
-              <Pie
-                data={{
-                  labels: Object.keys(circleStats.typeCounts),
-                  datasets: [{
-                    data: Object.values(circleStats.typeCounts),
-                    backgroundColor: Object.keys(circleStats.typeCounts).map(t => MARKER_COLORS[t] || '#888'),
-                    borderWidth: 1
-                  }]
+                onClick={() => {
+                  if (isDrawing) {
+                    exitDrawMode();
+                  } else {
+                    setIsDrawing(true);
+                    setCircleData(null);
+                  }
                 }}
-                options={{ plugins: { legend: { display: true, position: 'bottom' } } }}
-                width={220}
-                height={220}
-              />
-              <div className="mt-4 w-full">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr>
-                      <th className="text-left">&nbsp;</th>
-                      <th className="text-left">Konum Türü</th>
-                      <th className="text-right">Adet</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {Object.entries(circleStats.typeCounts).map(([type, count]) => (
-                      <tr key={type}>
-                        <td>
-                          <span style={{
-                            display: 'inline-block',
-                            width: 16,
-                            height: 16,
-                            borderRadius: 8,
-                            background: MARKER_COLORS[type] || '#888',
-                            marginRight: 8
-                          }} />
-                        </td>
-                        <td>{type}</td>
-                        <td className="text-right font-semibold">{count}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                className={`p-2 rounded-lg shadow-lg transition-colors ${
+                  isDrawing ? 'bg-red-500 text-white' : 'bg-white text-gray-800'
+                }`}
+                title={isDrawing ? 'Çizimi İptal Et (Ctrl+Shift)' : 'Çeper Çiz'}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+              </button>
+
+              {/* Login/Logout Butonu */}
+              {isLoggedIn ? (
+                <button
+                  onClick={handleLogout}
+                  className="p-2 rounded-lg shadow-lg bg-red-500 text-white hover:bg-red-600 transition-colors"
+                  title="Çıkış Yap"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                  </svg>
+                </button>
+              ) : (
+                <button
+                  onClick={() => window.location.href = '/admin/login'}
+                  className="p-2 rounded-lg shadow-lg bg-blue-500 text-white hover:bg-blue-600 transition-colors"
+                  title="Giriş Yap"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                  </svg>
+                </button>
+              )}
             </div>
-            <button
-              className="mt-6 px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 transition"
-              onClick={() => setIsDetailPanelOpen(false)}
+
+            {/* Sağ panel */}
+            <div className="absolute top-4 right-4 bg-white p-4 rounded-lg shadow-lg max-h-[calc(100vh-32px)] overflow-y-auto z-10">
+              <h2 className="text-lg font-semibold mb-4">Konum Türleri</h2>
+              {LOCATION_TYPES.map(type => (
+                <label key={type} className="flex items-center mb-2">
+                  <input
+                    type="checkbox"
+                    checked={filters[type as keyof typeof filters]}
+                    onChange={() => toggleFilter(type)}
+                    className="mr-2"
+                  />
+                  {type}
+                </label>
+              ))}
+            </div>
+
+            {/* Harita */}
+            <Map
+              ref={mapRef}
+              {...viewState}
+              onMove={onMove}
+              onMouseDown={handleMouseDown}
+              onMouseMove={(e) => {
+                handleMouseMove(e);
+                handleHover(e);
+              }}
+              onMouseUp={handleMouseUp}
+              mapStyle="mapbox://styles/mapbox/streets-v11"
+              mapboxAccessToken={process.env.REACT_APP_MAPBOX_TOKEN}
+              style={{ width: '100%', height: '100%' }}
+              cursor={isDrawing ? 'crosshair' : 'auto'}
+              dragPan={!isDragging}
+              dragRotate={!isDragging}
+              scrollZoom={!isDrawing}
+              doubleClickZoom={false}
+              touchZoomRotate={!isDrawing}
+              interactiveLayerIds={isDrawing ? [] : undefined}
+              onClick={() => setSelectedLocation(null)}
             >
-              Kapat
-            </button>
+              <NavigationControl position="top-left" />
+              <Markers
+                locations={filteredLocations}
+                isClusterMode={isClusterMode}
+                onMarkerClick={handleMarkerClick}
+                parkingOccupancies={parkingOccupancies}
+                filters={filters}
+                bounds={bounds}
+                zoom={viewState.zoom}
+                mapRef={mapRef}
+              />
+              {selectedLocation && (
+                <LocationPopup
+                  location={selectedLocation}
+                  onClose={() => setSelectedLocation(null)}
+                  parkingOccupancies={parkingOccupancies}
+                />
+              )}
+              {/* Çeper çizimi için kaynak ve katman */}
+              {isDrawing && startPoint && (
+                <Source
+                  type="geojson"
+                  data={{
+                    type: 'Feature',
+                    properties: {},
+                    geometry: {
+                      type: 'Point',
+                      coordinates: startPoint
+                    }
+                  }}
+                >
+                  <Layer
+                    type="circle"
+                    paint={{
+                      'circle-radius': 8,
+                      'circle-color': '#007cbf',
+                      'circle-stroke-width': 2,
+                      'circle-stroke-color': '#fff'
+                    }}
+                  />
+                </Source>
+              )}
+              {previewCircle && (
+                <Source type="geojson" data={previewCircle}>
+                  <Layer
+                    type="fill"
+                    paint={{
+                      'fill-color': '#007cbf',
+                      'fill-opacity': 0.1,
+                      'fill-outline-color': '#007cbf'
+                    }}
+                  />
+                </Source>
+              )}
+              {circleData && (
+                <Source type="geojson" data={circleData}>
+                  <Layer
+                    type="fill"
+                    paint={{
+                      'fill-color': '#007cbf',
+                      'fill-opacity': 0.1,
+                      'fill-outline-color': '#007cbf'
+                    }}
+                  />
+                </Source>
+              )}
+              {(circleData && hoverInfo) && (
+                <Popup
+                  longitude={hoverInfo.longitude}
+                  latitude={hoverInfo.latitude}
+                  anchor="top"
+                  closeButton={false}
+                  closeOnClick={false}
+                  offset={[0, -10] as [number, number]}
+                  style={{ zIndex: 20 }}
+                >
+                  <div className="bg-white rounded-lg shadow-lg p-4 min-w-[220px] max-w-xs flex flex-col items-center">
+                    <Pie
+                      data={{
+                        labels: Object.keys(circleStats.typeCounts),
+                        datasets: [{
+                          data: Object.values(circleStats.typeCounts),
+                          backgroundColor: Object.keys(circleStats.typeCounts).map(t => MARKER_COLORS[t] || '#888'),
+                          borderWidth: 1
+                        }]
+                      }}
+                      options={{ plugins: { legend: { display: true, position: 'bottom' } } }}
+                      width={180}
+                      height={180}
+                    />
+                    <div className="mt-2 text-center text-sm font-medium">
+                      Toplam: {circleStats.total} konum
+                    </div>
+                    <button
+                      className="mt-2 px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+                      onClick={() => setIsDetailPanelOpen(true)}
+                    >
+                      Ayrıntılı Gör
+                    </button>
+                  </div>
+                </Popup>
+              )}
+            </Map>
+            {/* Sağda açılan panel */}
+            {isDetailPanelOpen && (
+              <div
+                style={{
+                  position: 'fixed',
+                  top: 0,
+                  right: 0,
+                  height: '100vh',
+                  width: panelWidth,
+                  background: '#fff',
+                  zIndex: 50,
+                  boxShadow: '-2px 0 8px rgba(0,0,0,0.08)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  borderLeft: '1px solid #eee'
+                }}
+              >
+                {/* Sürüklenebilir orta çizgi */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    left: -6,
+                    top: 0,
+                    width: 12,
+                    height: '100%',
+                    cursor: 'ew-resize',
+                    zIndex: 100
+                  }}
+                  onMouseDown={e => {
+                    const startX = e.clientX;
+                    const startWidth = panelWidth;
+                    const onMove = (ev: MouseEvent) => {
+                      setPanelWidth(Math.max(300, startWidth - (ev.clientX - startX)));
+                    };
+                    const onUp = () => {
+                      window.removeEventListener('mousemove', onMove);
+                      window.removeEventListener('mouseup', onUp);
+                    };
+                    window.addEventListener('mousemove', onMove);
+                    window.addEventListener('mouseup', onUp);
+                  }}
+                >
+                  <div style={{ width: 12, height: '100%', background: 'transparent' }} />
+                </div>
+                <div className="p-6 flex-1 overflow-y-auto">
+                  <div className="flex flex-col items-center">
+                    <Pie
+                      data={{
+                        labels: Object.keys(circleStats.typeCounts),
+                        datasets: [{
+                          data: Object.values(circleStats.typeCounts),
+                          backgroundColor: Object.keys(circleStats.typeCounts).map(t => MARKER_COLORS[t] || '#888'),
+                          borderWidth: 1
+                        }]
+                      }}
+                      options={{ plugins: { legend: { display: true, position: 'bottom' } } }}
+                      width={220}
+                      height={220}
+                    />
+                    <div className="mt-4 w-full">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr>
+                            <th className="text-left">&nbsp;</th>
+                            <th className="text-left">Konum Türü</th>
+                            <th className="text-right">Adet</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {Object.entries(circleStats.typeCounts).map(([type, count]) => (
+                            <tr key={type}>
+                              <td>
+                                <span style={{
+                                  display: 'inline-block',
+                                  width: 16,
+                                  height: 16,
+                                  borderRadius: 8,
+                                  background: MARKER_COLORS[type] || '#888',
+                                  marginRight: 8
+                                }} />
+                              </td>
+                              <td>{type}</td>
+                              <td className="text-right font-semibold">{count}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                  <button
+                    className="mt-6 px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 transition"
+                    onClick={() => setIsDetailPanelOpen(false)}
+                  >
+                    Kapat
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
-        </div>
-      )}
-    </div>
+        } />
+      </Routes>
+    </Router>
   );
 };
 

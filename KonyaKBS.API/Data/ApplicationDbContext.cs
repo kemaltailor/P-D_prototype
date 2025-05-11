@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using NetTopologySuite.Geometries;
+using KonyaKBS.API.Models;
 
 namespace KonyaKBS.API.Data
 {
@@ -11,6 +12,7 @@ namespace KonyaKBS.API.Data
         }
 
         public DbSet<GeoLocation> GeoLocations { get; set; }
+        public DbSet<AdminUser> AdminUsers { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -23,6 +25,26 @@ namespace KonyaKBS.API.Data
                 entity.Property(e => e.Type).IsRequired();
                 entity.Property(e => e.Geometry).HasColumnType("geometry");
             });
+
+            modelBuilder.Entity<AdminUser>(entity =>
+            {
+                entity.ToTable("admin_users");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Username).IsRequired();
+                entity.Property(e => e.PasswordHash).IsRequired();
+                entity.Property(e => e.CreatedAt).IsRequired();
+            });
+
+            // Admin kullanıcısı için seed data
+            modelBuilder.Entity<AdminUser>().HasData(
+                new AdminUser
+                {
+                    Id = 1,
+                    Username = "admin",
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("admin123"),
+                    CreatedAt = DateTime.UtcNow
+                }
+            );
         }
     }
 

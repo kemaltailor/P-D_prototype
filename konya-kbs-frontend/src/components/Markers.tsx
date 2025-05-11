@@ -15,6 +15,7 @@ interface MarkersProps {
   isClusterMode: boolean;
   onMarkerClick: (location: Location) => void;
   mapRef: React.RefObject<MapRef>;
+  parkingOccupancies: Record<number, number>;
 }
 
 interface ClusterProperties {
@@ -53,7 +54,7 @@ const calculatePolygonCenter = (coordinates: number[][][]): [number, number] => 
   return [sumX / points.length, sumY / points.length];
 };
 
-const Markers: React.FC<MarkersProps> = ({ locations, filters, bounds, zoom, isClusterMode, onMarkerClick, mapRef }) => {
+const Markers: React.FC<MarkersProps> = ({ locations, filters, bounds, zoom, isClusterMode, onMarkerClick, mapRef, parkingOccupancies }) => {
   const superclusters = useMemo(() => {
     if (!isClusterMode) return null;
 
