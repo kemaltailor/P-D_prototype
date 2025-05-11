@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("KonyaKBS.API")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+010fa43b42ce3d444afcf1861f0bd15647b3bb84")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0d73a7b4acfcf3aa9c5b2cdc1f2453ff0ac86531")]
 [assembly: System.Reflection.AssemblyProductAttribute("KonyaKBS.API")]
 [assembly: System.Reflection.AssemblyTitleAttribute("KonyaKBS.API")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

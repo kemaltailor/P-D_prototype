@@ -36,7 +36,8 @@ const LOCATION_TYPES = [
   'Paylaşımlı Bisiklet İstasyonu',
   'Otopark',
   'Hava Ölçüm İstasyonu',
-  'Kamera'
+  'Kamera',
+  'Tarihi/Turistik Yerler'
 ] as const;
 
 const calculatePolygonCenter = (coordinates: number[][][]): [number, number] => {
@@ -153,7 +154,8 @@ const Markers: React.FC<MarkersProps> = ({ locations, filters, bounds, zoom, isC
       'Paylaşımlı Bisiklet İstasyonu': 'bg-green-700',
       'Otopark': 'bg-blue-600',
       'Hava Ölçüm İstasyonu': 'bg-pink-500',
-      'Kamera': 'bg-indigo-500'
+      'Kamera': 'bg-indigo-500',
+      'Tarihi/Turistik Yerler': 'bg-fuchsia-600'
     };
     return colors[type as keyof typeof colors] || 'bg-gray-500';
   };

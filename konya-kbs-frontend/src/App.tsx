@@ -29,7 +29,8 @@ const LOCATION_TYPES = [
   'Paylaşımlı Bisiklet İstasyonu',
   'Otopark',
   'Hava Ölçüm İstasyonu',
-  'Kamera'
+  'Kamera',
+  'Tarihi/Turistik Yerler'
 ] as const;
 
 // Polygon'un merkez noktasını hesapla
@@ -74,7 +75,8 @@ const App: React.FC = () => {
     'Paylaşımlı Bisiklet İstasyonu': true,
     'Otopark': true,
     'Hava Ölçüm İstasyonu': false,
-    'Kamera': false
+    'Kamera': false,
+    'Tarihi/Turistik Yerler': true
   });
 
   const [isDrawing, setIsDrawing] = useState(false);
@@ -178,6 +180,12 @@ const App: React.FC = () => {
         const kameraData = await kameraResponse.json();
         const kameraLocations = kameraData.features.map((f: any) => extractLocation(f, 'Kamera'));
         allLocations.push(...kameraLocations);
+
+        // Turistik konumlar verilerini yükle
+        const turistikKonumlarResponse = await fetch(`${API_BASE_URL}/turistik-konumlar`);
+        const turistikKonumlarData = await turistikKonumlarResponse.json();
+        const turistikKonumlarLocations = turistikKonumlarData.features.map((f: any) => extractLocation(f, 'Tarihi/Turistik Yerler'));
+        allLocations.push(...turistikKonumlarLocations);
 
         console.log('Toplam konum sayısı:', allLocations.length);
         console.log('Örnek konum:', allLocations[0]);
@@ -344,6 +352,17 @@ const App: React.FC = () => {
           cameraUrl: feature.properties.url || ''
         };
       }
+    } else if (type === 'Tarihi/Turistik Yerler') {
+      return {
+        id: Math.random(),
+        type,
+        longitude: feature.geometry.coordinates[0],
+        latitude: feature.geometry.coordinates[1],
+        name: feature.properties.isim || 'İsimsiz',
+        turistikTur: feature.properties.tur,
+        aciklama: feature.properties.icerik,
+        resim: feature.properties.resim
+      };
     }
 
     if (feature.geometry.type === 'Point') {

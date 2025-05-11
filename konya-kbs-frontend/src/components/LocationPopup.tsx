@@ -285,6 +285,29 @@ const LocationPopup: React.FC<LocationPopupProps> = ({ location, onClose, parkin
           </div>
         );
 
+      case 'Tarihi/Turistik Yerler':
+        return (
+          <div className="p-2 border border-gray-200 rounded-lg shadow-sm max-w-xs">
+            <h3 className="font-semibold text-gray-800 mb-2">{location.turistikTur || 'Tarihi/Turistik Yer'}</h3>
+            {location.resim && (
+              <div className="w-full flex justify-center items-center mb-2">
+                <img
+                  src={location.resim}
+                  alt={location.name}
+                  className="object-contain max-h-48 w-full rounded-lg border"
+                  style={{ maxWidth: '100%', maxHeight: '200px', display: 'block', margin: '0 auto' }}
+                />
+              </div>
+            )}
+            <div className="mb-1">
+              <span className="font-semibold">{location.name}</span>
+            </div>
+            <div className="text-sm text-gray-700 whitespace-pre-line">
+              {location.aciklama}
+            </div>
+          </div>
+        );
+
       case 'Hava Ölçüm İstasyonu': {
         const chartData: ChartData<'bar'> = {
           labels: ['PM10', 'NO2', 'NOX', 'NO'],

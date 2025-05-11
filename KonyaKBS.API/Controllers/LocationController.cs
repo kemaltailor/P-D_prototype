@@ -1,6 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using KonyaKBS.API.Data;
 using System.Text.Json;
+using Microsoft.EntityFrameworkCore;
+using Npgsql;
+using System.Data;
 
 namespace KonyaKBS.API.Controllers
 {
@@ -114,6 +117,63 @@ namespace KonyaKBS.API.Controllers
         {
             var data = _db.Kameralar.ToList();
             return CreateGeoJsonResponse(data, k => new { niteliK_AD = k.Name, URL = k.Url });
+        }
+
+        [HttpGet("turistik-konumlar")]
+        public IActionResult GetTuristikKonumlar()
+        {
+            var result = new List<TuristikKonumlarDTO>();
+            using (var conn = _db.Database.GetDbConnection())
+            {
+                conn.Open();
+                using (var cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = "SELECT id, tur, isim, icerik, resim, ST_X(geometry) as lon, ST_Y(geometry) as lat FROM turistik_konumlar";
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            result.Add(new TuristikKonumlarDTO
+                            {
+                                id = reader.GetInt32(0),
+                                tur = reader.GetString(1),
+                                isim = reader.GetString(2),
+                                icerik = reader.IsDBNull(3) ? null : reader.GetString(3),
+                                resim = reader.IsDBNull(4) ? null : reader.GetString(4),
+                                lon = reader.GetDouble(5),
+                                lat = reader.GetDouble(6)
+                            });
+                        }
+                    }
+                }
+            }
+            var features = result.Select(item => new
+            {
+                type = "Feature",
+                properties = new {
+                    tur = item.tur,
+                    isim = item.isim,
+                    icerik = item.icerik,
+                    resim = item.resim
+                },
+                geometry = new {
+                    type = "Point",
+                    coordinates = new[] { item.lon, item.lat }
+                }
+            });
+            var geoJson = new { type = "FeatureCollection", features = features };
+            return new JsonResult(geoJson);
+        }
+
+        public class TuristikKonumlarDTO
+        {
+            public int id { get; set; }
+            public string tur { get; set; }
+            public string isim { get; set; }
+            public string icerik { get; set; }
+            public string resim { get; set; }
+            public double lon { get; set; }
+            public double lat { get; set; }
         }
     }
 } 
