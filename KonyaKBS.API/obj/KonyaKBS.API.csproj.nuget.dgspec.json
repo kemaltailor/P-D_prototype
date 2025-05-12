@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "/Users/kemalterzi/Desktop/kbs-konya/KonyaKBS.API/KonyaKBS.API.csproj": {}
+    "/Users/kemalterzi/Desktop/kbs-konya-2/KonyaKBS.API/KonyaKBS.API.csproj": {}
   },
   "projects": {
-    "/Users/kemalterzi/Desktop/kbs-konya/KonyaKBS.API/KonyaKBS.API.csproj": {
+    "/Users/kemalterzi/Desktop/kbs-konya-2/KonyaKBS.API/KonyaKBS.API.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/kemalterzi/Desktop/kbs-konya/KonyaKBS.API/KonyaKBS.API.csproj",
+        "projectUniqueName": "/Users/kemalterzi/Desktop/kbs-konya-2/KonyaKBS.API/KonyaKBS.API.csproj",
         "projectName": "KonyaKBS.API",
-        "projectPath": "/Users/kemalterzi/Desktop/kbs-konya/KonyaKBS.API/KonyaKBS.API.csproj",
+        "projectPath": "/Users/kemalterzi/Desktop/kbs-konya-2/KonyaKBS.API/KonyaKBS.API.csproj",
         "packagesPath": "/Users/kemalterzi/.nuget/packages/",
-        "outputPath": "/Users/kemalterzi/Desktop/kbs-konya/KonyaKBS.API/obj/",
+        "outputPath": "/Users/kemalterzi/Desktop/kbs-konya-2/KonyaKBS.API/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "/Users/kemalterzi/.nuget/NuGet/NuGet.Config"

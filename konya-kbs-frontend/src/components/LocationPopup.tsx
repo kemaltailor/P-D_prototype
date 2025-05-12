@@ -148,6 +148,8 @@ const LocationPopup: React.FC<LocationPopupProps> = ({ location, onClose, parkin
   const renderPopupContent = () => {
     switch (location.type) {
       case 'Otopark':
+        // Doluluk oranı veritabanından gelen location.occupiedSpaces üzerinden alınacak
+        const doluluk = location.occupiedSpaces ?? 0;
         return (
           <div className="p-2 border border-gray-200 rounded-lg shadow-sm">
             <h3 className="font-semibold text-gray-800">{location.type}</h3>
@@ -156,12 +158,13 @@ const LocationPopup: React.FC<LocationPopupProps> = ({ location, onClose, parkin
             )}
             <div className="mt-2">
               <div className="flex justify-between text-sm text-gray-600 mb-1">
-                <span>Doluluk: {parkingOccupancies?.[location.id] || 0} / 100</span>
+                <span>Doluluk: {doluluk} / 100</span>
+                <span>%{doluluk}</span>
               </div>
               <div className="w-full bg-gray-100 rounded-full h-2.5 border border-gray-300">
                 <div
                   className="bg-blue-600 h-2.5 rounded-full transition-all duration-300"
-                  style={{ width: `${parkingOccupancies?.[location.id] || 0}%` }}
+                  style={{ width: `${doluluk}%` }}
                 ></div>
               </div>
             </div>
@@ -175,9 +178,6 @@ const LocationPopup: React.FC<LocationPopupProps> = ({ location, onClose, parkin
             {location.name && (
               <p className="text-sm text-gray-600">{location.name}</p>
             )}
-            <div className="mt-2">
-              <p className="text-sm text-gray-600">Bisiklet Park Alanı</p>
-            </div>
           </div>
         );
 
@@ -188,9 +188,6 @@ const LocationPopup: React.FC<LocationPopupProps> = ({ location, onClose, parkin
             {location.name && (
               <p className="text-sm text-gray-600">{location.name}</p>
             )}
-            <div className="mt-2">
-              <p className="text-sm text-gray-600">Paylaşımlı Bisiklet İstasyonu</p>
-            </div>
           </div>
         );
 
@@ -201,9 +198,6 @@ const LocationPopup: React.FC<LocationPopupProps> = ({ location, onClose, parkin
             {location.name && (
               <p className="text-sm text-gray-600">{location.name}</p>
             )}
-            <div className="mt-2">
-              <p className="text-sm text-gray-600">Cami Bilgileri</p>
-            </div>
           </div>
         );
 
@@ -214,9 +208,6 @@ const LocationPopup: React.FC<LocationPopupProps> = ({ location, onClose, parkin
             {location.name && (
               <p className="text-sm text-gray-600">{location.name}</p>
             )}
-            <div className="mt-2">
-              <p className="text-sm text-gray-600">Sağlık Tesisi Bilgileri</p>
-            </div>
           </div>
         );
 
@@ -227,9 +218,6 @@ const LocationPopup: React.FC<LocationPopupProps> = ({ location, onClose, parkin
             {location.name && (
               <p className="text-sm text-gray-600">{location.name}</p>
             )}
-            <div className="mt-2">
-              <p className="text-sm text-gray-600">Okul Bilgileri</p>
-            </div>
           </div>
         );
 
@@ -240,9 +228,6 @@ const LocationPopup: React.FC<LocationPopupProps> = ({ location, onClose, parkin
             {location.name && (
               <p className="text-sm text-gray-600">{location.name}</p>
             )}
-            <div className="mt-2">
-              <p className="text-sm text-gray-600">Park Bilgileri</p>
-            </div>
           </div>
         );
 
@@ -253,9 +238,6 @@ const LocationPopup: React.FC<LocationPopupProps> = ({ location, onClose, parkin
             {location.name && (
               <p className="text-sm text-gray-600">{location.name}</p>
             )}
-            <div className="mt-2">
-              <p className="text-sm text-gray-600">Çeşme Bilgileri</p>
-            </div>
           </div>
         );
 
@@ -266,9 +248,6 @@ const LocationPopup: React.FC<LocationPopupProps> = ({ location, onClose, parkin
             {location.name && (
               <p className="text-sm text-gray-600">{location.name}</p>
             )}
-            <div className="mt-2">
-              <p className="text-sm text-gray-600">Eczane Bilgileri</p>
-            </div>
           </div>
         );
 
@@ -279,9 +258,6 @@ const LocationPopup: React.FC<LocationPopupProps> = ({ location, onClose, parkin
             {location.name && (
               <p className="text-sm text-gray-600">{location.name}</p>
             )}
-            <div className="mt-2">
-              <p className="text-sm text-gray-600">Toplanma Alanı Bilgileri</p>
-            </div>
           </div>
         );
 
@@ -479,4 +455,4 @@ const LocationPopup: React.FC<LocationPopupProps> = ({ location, onClose, parkin
   );
 };
 
-export default LocationPopup; 
+export default LocationPopup;

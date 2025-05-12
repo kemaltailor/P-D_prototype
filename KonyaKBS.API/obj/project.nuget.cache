@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "R9HrrRoM+wuHz3qaGIsYNXqwb4jSeqhBThnnoQycGx1EGe5SVum+CnuHKWy4CUrBn1JI7y8QSWbRM2ozMreEIA==",
+  "dgSpecHash": "luayUIS1pg6x4+NUdme7Ac5d+4o52E+r6VQ0Ip31Btis1KbyyDodGG2K5Cz/+tkatToI3OmXS8YRaBSeDNM/Pw==",
   "success": true,
-  "projectFilePath": "/Users/kemalterzi/Desktop/kbs-konya/KonyaKBS.API/KonyaKBS.API.csproj",
+  "projectFilePath": "/Users/kemalterzi/Desktop/kbs-konya-2/KonyaKBS.API/KonyaKBS.API.csproj",
   "expectedPackageFiles": [
     "/Users/kemalterzi/.nuget/packages/bcrypt.net-next/4.0.3/bcrypt.net-next.4.0.3.nupkg.sha512",
     "/Users/kemalterzi/.nuget/packages/humanizer.core/2.14.1/humanizer.core.2.14.1.nupkg.sha512",

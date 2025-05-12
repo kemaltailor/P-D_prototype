@@ -2,9 +2,19 @@ import React, { useMemo, useCallback } from 'react';
 import { Marker, MapRef } from 'react-map-gl';
 import Supercluster from 'supercluster';
 import { BBox, Feature, Point } from 'geojson';
-import bisikletParkIcon from '../icons/bisiklet-park-konum.png';
-import paylasimliIstasyonIcon from '../icons/paylasimli-bisiklet-istasyonlari.png';
-import otoparkIcon from '../icons/otoparklar.png';
+import bisikletParkIcon from '../icons/bisiklet-park-alani.png';
+import camiIcon from '../icons/cami.png';
+import eczaneIcon from '../icons/eczane.png';
+import havaOlcumIcon from '../icons/hava-olcum-istasyonu.png';
+import kameraIcon from '../icons/kamera.png';
+import okulIcon from '../icons/okul.png';
+import otoparkIcon from '../icons/otopark.png';
+import parkIcon from '../icons/park.png';
+import paylasimliBisikletIcon from '../icons/paylasimli-bisiklet-istasyonu.png';
+import saglikTesisiIcon from '../icons/saglik-tesisi.png';
+import tarihiTuristikIcon from '../icons/tarihi-turistik-yerler.png';
+import tatliSuCesmesiIcon from '../icons/tatli-su-cesmesi.png';
+import toplanmaAlaniIcon from '../icons/toplanma-alani.png';
 import { Location } from '../types/Location';
 
 interface MarkersProps {
@@ -52,6 +62,39 @@ const calculatePolygonCenter = (coordinates: number[][][]): [number, number] => 
   }
   
   return [sumX / points.length, sumY / points.length];
+};
+
+const ICONS: Record<string, string> = {
+  'Bisiklet Park Alanı': bisikletParkIcon,
+  'Cami': camiIcon,
+  'Eczane': eczaneIcon,
+  'Hava Ölçüm İstasyonu': havaOlcumIcon,
+  'Kamera': kameraIcon,
+  'Okul': okulIcon,
+  'Otopark': otoparkIcon,
+  'Park': parkIcon,
+  'Paylaşımlı Bisiklet İstasyonu': paylasimliBisikletIcon,
+  'Sağlık Tesisi': saglikTesisiIcon,
+  'Tarihi/Turistik Yerler': tarihiTuristikIcon,
+  'Tatlı Su Çeşmesi': tatliSuCesmesiIcon,
+  'Toplanma Alanı': toplanmaAlaniIcon
+};
+
+// Her konum türü için özel stil değerleri
+const MARKER_STYLES: Record<string, { size: string, shadow: string }> = {
+  'Bisiklet Park Alanı': { size: 'w-20 h-30', shadow: 'drop-shadow(0 3px 6px rgb(0 0 0 / 0.3))' },
+  'Cami': { size: 'w-10 h-15', shadow: 'drop-shadow(0 3px 6px rgb(0 0 0 / 0.3))' },
+  'Eczane': { size: 'w-10 h-10', shadow: 'drop-shadow(0 3px 6px rgb(0 0 0 / 0.3))' },
+  'Hava Ölçüm İstasyonu': { size: 'w-20 h-35', shadow: 'drop-shadow(0 3px 6px rgb(0 0 0 / 0.2))' },
+  'Kamera': { size: 'w-30 h-16', shadow: 'drop-shadow(0 3px 6px rgb(0 0 0 / 0.3))' },
+  'Okul': { size: 'w-10 h-10', shadow: 'drop-shadow(0 3px 6px rgb(0 0 0 / 0.3))' },
+  'Otopark': { size: 'w-15 h-14', shadow: 'drop-shadow(0 3px 6px rgb(0 0 0 / 0.3))' },
+  'Park': { size: 'w-15 h-14', shadow: 'drop-shadow(0 3px 6px rgb(0 0 0 / 0.3))' },
+  'Paylaşımlı Bisiklet İstasyonu': { size: 'w-26 h-24', shadow: 'drop-shadow(0 3px 6px rgb(0 0 0 / 0.3))' },
+  'Sağlık Tesisi': { size: 'w-15 h-14', shadow: 'drop-shadow(0 3px 6px rgb(0 0 0 / 0.3))' },
+  'Tarihi/Turistik Yerler': { size: 'w-20 h-20', shadow: 'drop-shadow(0 3px 6px rgb(0 0 0 / 0.3))' },
+  'Tatlı Su Çeşmesi': { size: 'w-10 h-10', shadow: 'drop-shadow(0 3px 6px rgb(0 0 0 / 0.3))' },
+  'Toplanma Alanı': { size: 'w-18 h-16', shadow: 'drop-shadow(0 3px 6px rgb(0 0 0 / 0.3))' }
 };
 
 const Markers: React.FC<MarkersProps> = ({ locations, filters, bounds, zoom, isClusterMode, onMarkerClick, mapRef, parkingOccupancies }) => {
@@ -107,10 +150,7 @@ const Markers: React.FC<MarkersProps> = ({ locations, filters, bounds, zoom, isC
 
   // Marker render fonksiyonu
   const renderMarker = useCallback((location: Location) => {
-    const isBikeParking = location.type === 'Bisiklet Park Alanı';
-    const isBikeStation = location.type === 'Paylaşımlı Bisiklet İstasyonu';
-    const isCarParking = location.type === 'Otopark';
-    
+    const style = MARKER_STYLES[location.type];
     return (
       <Marker
         key={`location-${location.id}`}
@@ -122,67 +162,83 @@ const Markers: React.FC<MarkersProps> = ({ locations, filters, bounds, zoom, isC
         }}
         style={{ cursor: 'pointer' }}
       >
-        {isBikeParking || isBikeStation || isCarParking ? (
-          <img 
-            src={isCarParking ? otoparkIcon : (isBikeParking ? bisikletParkIcon : paylasimliIstasyonIcon)}
-            alt={location.type}
-            className="w-8 h-8"
-            style={{ 
-              transform: 'translate(-50%, -100%)',
-              filter: 'drop-shadow(0 1px 2px rgb(0 0 0 / 0.2))'
-            }}
-          />
-        ) : (
-          <div 
-            className={`w-3.5 h-3.5 rounded-full ${getMarkerColor(location.type)} shadow-md`}
-            style={{ transform: 'translate(-50%, -50%)' }}
-          />
-        )}
+        <img
+          src={ICONS[location.type]}
+          alt={location.type}
+          className={style.size}
+          style={{
+            transform: 'translate(-50%, -100%)',
+            filter: style.shadow
+          }}
+        />
       </Marker>
     );
   }, [onMarkerClick]);
 
   const getMarkerColor = (type: string) => {
     const colors = {
-      Park: 'bg-green-500',
-      Cami: 'bg-purple-500',
-      'Sağlık Tesisi': 'bg-red-500',
-      Okul: 'bg-blue-500',
-      'Tatlı Su Çeşmesi': 'bg-cyan-500',
-      Eczane: 'bg-orange-500',
-      'Toplanma Alanı': 'bg-yellow-500',
-      'Bisiklet Park Alanı': 'bg-yellow-400',
-      'Paylaşımlı Bisiklet İstasyonu': 'bg-green-700',
-      'Otopark': 'bg-blue-600',
-      'Hava Ölçüm İstasyonu': 'bg-pink-500',
-      'Kamera': 'bg-indigo-500',
-      'Tarihi/Turistik Yerler': 'bg-fuchsia-600'
+      'Park': '#4CAF50', // Yeşil
+      'Cami': '#9C27B0', // Mor
+      'Sağlık Tesisi': '#F44336', // Kırmızı
+      'Okul': '#2196F3', // Mavi
+      'Tatlı Su Çeşmesi': '#00BCD4', // Açık Mavi
+      'Eczane': '#FF9800', // Turuncu
+      'Toplanma Alanı': '#FFEB3B', // Sarı
+      'Bisiklet Park Alanı': '#FFC107', // Amber
+      'Paylaşımlı Bisiklet İstasyonu': '#795548', // Kahverengi
+      'Otopark': '#3F51B5', // İndigo
+      'Hava Ölçüm İstasyonu': '#E91E63', // Pembe
+      'Kamera': '#673AB7', // Koyu Mor
+      'Tarihi/Turistik Yerler': '#FF5722' // Turuncu-Kahverengi
     };
-    return colors[type as keyof typeof colors] || 'bg-gray-500';
+    return colors[type as keyof typeof colors] || '#9E9E9E';
+  };
+
+  // Çember çizimi için stil
+  const circleStyle = {
+    fill: 'rgba(33, 150, 243, 0.2)', // Daha koyu mavi
+    stroke: 'rgba(33, 150, 243, 0.8)', // Daha belirgin border
+    strokeWidth: 2
   };
 
   const extractLocation = (feature: any, type: Location['type']): Location => {
     let name = '';
     let occupiedSpaces: number | undefined;
     
-    // Veri setine göre isim alanını belirle
-    if (type === 'Eczane') {
-      name = feature.properties.ADI;
-    } else if (type === 'Okul' || type === 'Sağlık Tesisi' || type === 'Bisiklet Park Alanı' || type === 'Cami') {
-      name = feature.properties.NITELIK_AD;
+    // Park
+    if (type === 'Park') {
+      name = `${feature.properties.ilceadi || ''} - ${feature.properties.usT_NITELIK_ADI || ''}`;
+    } else if (type === 'Sağlık Tesisi') {
+      name = feature.properties.adi || '';
+    } else if (type === 'Cami') {
+      name = feature.properties.adi || '';
+    } else if (type === 'Okul') {
+      name = feature.properties.adi || '';
+    } else if (type === 'Eczane') {
+      name = feature.properties.adi || '';
     } else if (type === 'Toplanma Alanı') {
-      name = feature.properties.ADI;
-    } else if (type === 'Otopark') {
-      name = feature.properties.name;
-      occupiedSpaces = feature.properties.occupiedSpaces;
-    } else if (type === 'Park') {
-      name = `${feature.properties.ILCEADI} - ${feature.properties.UST_NITELIK_ADI}`;
+      name = feature.properties.adi || '';
+    } else if (type === 'Bisiklet Park Alanı') {
+      name = feature.properties.niteliK_AD || '';
     } else if (type === 'Paylaşımlı Bisiklet İstasyonu') {
-      name = feature.properties.NITELIK_AD;
+      name = feature.properties.niteliK_AD || '';
+    } else if (type === 'Otopark') {
+      name = feature.properties.name || '';
+      occupiedSpaces = feature.properties.occupiedSpaces;
     } else if (type === 'Tatlı Su Çeşmesi') {
-      name = feature.properties.ACIKLAMA;
-    } else if (type === 'Hava Ölçüm İstasyonu' || type === 'Kamera') {
-      name = feature.properties.NITELIK_AD;
+      name = feature.properties.aciklama || '';
+    } else if (type === 'Hava Ölçüm İstasyonu') {
+      name = feature.properties.niteliK_AD || '';
+    } else if (type === 'Kamera') {
+      name = feature.properties.niteliK_AD || '';
+      return {
+        id: Math.random(),
+        type,
+        longitude: feature.geometry.coordinates[0],
+        latitude: feature.geometry.coordinates[1],
+        name,
+        cameraUrl: feature.properties.url || ''
+      };
     }
 
     if (feature.geometry.type === 'Point') {
@@ -235,6 +291,7 @@ const Markers: React.FC<MarkersProps> = ({ locations, filters, bounds, zoom, isC
               );
               const zoomFactor = Math.max(0.6, (16 - zoom) / 8);
               const size = baseSize * zoomFactor;
+              const color = getMarkerColor(type);
 
               return (
                 <Marker
@@ -255,13 +312,16 @@ const Markers: React.FC<MarkersProps> = ({ locations, filters, bounds, zoom, isC
                   style={{ cursor: 'pointer' }}
                 >
                   <div 
-                    className={`${type === 'Otopark' ? '' : getMarkerColor(type)} rounded-full flex items-center justify-center text-white font-medium shadow-md`}
+                    className="rounded-full flex items-center justify-center text-white font-medium shadow-lg"
                     style={{
                       width: `${size}px`,
                       height: `${size}px`,
                       transform: 'translate(-50%, -50%)',
                       fontSize: `${Math.max(13, size/2.5)}px`,
-                      backgroundColor: type === 'Otopark' ? '#004aad' : undefined
+                      backgroundColor: color,
+                      opacity: 0.9,
+                      border: '2px solid white',
+                      boxShadow: '0 2px 4px rgba(0,0,0,0.3)'
                     }}
                   >
                     {pointCount}

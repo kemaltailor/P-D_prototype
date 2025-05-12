@@ -11,6 +11,21 @@ import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import AdminLogin from './pages/AdminLogin';
 import KonumEkle from './pages/KonumEkle';
+import logo from './logo/logo.svg';
+import bisikletParkIcon from './icons/bisiklet-park-alani.png';
+import camiIcon from './icons/cami.png';
+import eczaneIcon from './icons/eczane.png';
+import havaOlcumIcon from './icons/hava-olcum-istasyonu.png';
+import kameraIcon from './icons/kamera.png';
+import okulIcon from './icons/okul.png';
+import otoparkIcon from './icons/otopark.png';
+import parkIcon from './icons/park.png';
+import paylasimliBisikletIcon from './icons/paylasimli-bisiklet-istasyonu.png';
+import saglikTesisiIcon from './icons/saglik-tesisi.png';
+import tarihiTuristikIcon from './icons/tarihi-turistik-yerler.png';
+import tatliSuCesmesiIcon from './icons/tatli-su-cesmesi.png';
+import toplanmaAlaniIcon from './icons/toplanma-alani.png';
+import clusterPointModeIcon from './icons/cluster-point-mode.png';
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 interface ViewState {
@@ -70,6 +85,40 @@ const MARKER_COLORS: Record<string, string> = {
   'Tarihi/Turistik Yerler': '#a21caf'
 };
 
+const ICONS: Record<string, string> = {
+  'Bisiklet Park Alanı': bisikletParkIcon,
+  'Cami': camiIcon,
+  'Eczane': eczaneIcon,
+  'Hava Ölçüm İstasyonu': havaOlcumIcon,
+  'Kamera': kameraIcon,
+  'Okul': okulIcon,
+  'Otopark': otoparkIcon,
+  'Park': parkIcon,
+  'Paylaşımlı Bisiklet İstasyonu': paylasimliBisikletIcon,
+  'Sağlık Tesisi': saglikTesisiIcon,
+  'Tarihi/Turistik Yerler': tarihiTuristikIcon,
+  'Tatlı Su Çeşmesi': tatliSuCesmesiIcon,
+  'Toplanma Alanı': toplanmaAlaniIcon
+};
+
+// Buton ikon boyutları
+const CLUSTER_MODE_ICON_SIZE = 'h-8 w-8'; // Cluster/point mode butonu için
+const FILTER_ICON_SIZES: Record<string, string> = {
+  'Park': 'w-12 h-12',
+  'Cami': 'w-11 h-11',
+  'Sağlık Tesisi': 'w-10 h-12',
+  'Okul': 'w-12 h-12',
+  'Tatlı Su Çeşmesi': 'w-10 h-10',
+  'Eczane': 'w-8 h-8',
+  'Toplanma Alanı': 'w-18 h-18',
+  'Bisiklet Park Alanı': 'w-30 h-30',
+  'Paylaşımlı Bisiklet İstasyonu': 'w-20 h-20',
+  'Otopark': 'w-19 h-19',
+  'Hava Ölçüm İstasyonu': 'w-19 h-19',
+  'Kamera': 'w-18 h-18',
+  'Tarihi/Turistik Yerler': 'w-18 h-18'
+};
+
 const App: React.FC = () => {
   const mapRef = useRef<MapRef>(null);
   const [viewState, setViewState] = useState<ViewState>({
@@ -88,19 +137,19 @@ const App: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const [filters, setFilters] = useState({
-    'Park': false,
+    'Park': true,
     'Cami': false,
-    'Sağlık Tesisi': false,
+    'Sağlık Tesisi': true,
     'Okul': false,
-    'Tatlı Su Çeşmesi': false,
+    'Tatlı Su Çeşmesi': true,
     'Eczane': false,
     'Toplanma Alanı': false,
-    'Bisiklet Park Alanı': true,
-    'Paylaşımlı Bisiklet İstasyonu': true,
+    'Bisiklet Park Alanı': false,
+    'Paylaşımlı Bisiklet İstasyonu': false,
     'Otopark': true,
     'Hava Ölçüm İstasyonu': false,
     'Kamera': false,
-    'Tarihi/Turistik Yerler': true
+    'Tarihi/Turistik Yerler': false
   });
 
   const [isDrawing, setIsDrawing] = useState(false);
@@ -116,6 +165,7 @@ const App: React.FC = () => {
 
   const [isDetailPanelOpen, setIsDetailPanelOpen] = useState(false);
   const [panelWidth, setPanelWidth] = useState(400);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
   // Çeperdeki konumları ve tür sayılarını hesapla
   const getCircleStats = () => {
@@ -368,40 +418,47 @@ const App: React.FC = () => {
     let name = '';
     let occupiedSpaces: number | undefined;
     
-    // Veri setine göre isim alanını belirle
-    if (type === 'Eczane') {
-      name = feature.properties.ADI || 'İsimsiz Eczane';
-    } else if (type === 'Okul' || type === 'Sağlık Tesisi' || type === 'Bisiklet Park Alanı' || type === 'Cami') {
-      name = feature.properties.NITELIK_AD || feature.properties.niteliK_AD || 'İsimsiz Tesis';
+    // Park
+    if (type === 'Park') {
+      name = `${feature.properties.ilceadi || ''} - ${feature.properties.usT_NITELIK_ADI || ''}`;
+    } else if (type === 'Sağlık Tesisi') {
+      name = feature.properties.adi || '';
+    } else if (type === 'Cami') {
+      name = feature.properties.adi || '';
+    } else if (type === 'Okul') {
+      name = feature.properties.adi || '';
+    } else if (type === 'Eczane') {
+      name = feature.properties.adi || '';
     } else if (type === 'Toplanma Alanı') {
-      name = feature.properties.ADI || 'İsimsiz Toplanma Alanı';
-    } else if (type === 'Otopark') {
-      name = feature.properties.name || 'İsimsiz Otopark';
-    } else if (type === 'Park') {
-      name = `${feature.properties.ILCEADI || 'Bilinmeyen İlçe'} - ${feature.properties.UST_NITELIK_ADI || 'İsimsiz Park'}`;
+      name = feature.properties.adi || '';
+    } else if (type === 'Bisiklet Park Alanı') {
+      name = feature.properties.niteliK_AD || '';
     } else if (type === 'Paylaşımlı Bisiklet İstasyonu') {
-      name = feature.properties.NITELIK_AD || feature.properties.niteliK_AD || 'İsimsiz İstasyon';
+      name = feature.properties.niteliK_AD || '';
+    } else if (type === 'Otopark') {
+      name = feature.properties.name || '';
+      occupiedSpaces = feature.properties.occupiedSpaces;
     } else if (type === 'Tatlı Su Çeşmesi') {
-      name = feature.properties.ACIKLAMA || 'İsimsiz Çeşme';
-    } else if (type === 'Hava Ölçüm İstasyonu' || type === 'Kamera') {
-      name = feature.properties.NITELIK_AD || feature.properties.niteliK_AD || 'İsimsiz İstasyon';
-      if (type === 'Kamera') {
-        return {
-          id: Math.random(),
-          type,
-          longitude: feature.geometry.coordinates[0],
-          latitude: feature.geometry.coordinates[1],
-          name,
-          cameraUrl: feature.properties.url || ''
-        };
-      }
+      name = feature.properties.aciklama || '';
+    } else if (type === 'Hava Ölçüm İstasyonu') {
+      name = feature.properties.niteliK_AD || '';
+    } else if (type === 'Kamera') {
+      name = feature.properties.niteliK_AD || '';
+      return {
+        id: Math.random(),
+        type,
+        longitude: feature.geometry.coordinates[0],
+        latitude: feature.geometry.coordinates[1],
+        name,
+        cameraUrl: feature.properties.url || ''
+      };
     } else if (type === 'Tarihi/Turistik Yerler') {
       return {
         id: Math.random(),
         type,
         longitude: feature.geometry.coordinates[0],
         latitude: feature.geometry.coordinates[1],
-        name: feature.properties.isim || 'İsimsiz',
+        name: feature.properties.isim || '',
         turistikTur: feature.properties.tur,
         aciklama: feature.properties.icerik,
         resim: feature.properties.resim
@@ -446,6 +503,34 @@ const App: React.FC = () => {
     setSelectedLocation(location);
   };
 
+  const getChartData = () => {
+    const chartColors = {
+      'Park': '#4CAF50',
+      'Cami': '#9C27B0',
+      'Sağlık Tesisi': '#F44336',
+      'Okul': '#2196F3',
+      'Tatlı Su Çeşmesi': '#00BCD4',
+      'Eczane': '#FF9800',
+      'Toplanma Alanı': '#FFEB3B',
+      'Bisiklet Park Alanı': '#FFC107',
+      'Paylaşımlı Bisiklet İstasyonu': '#795548',
+      'Otopark': '#3F51B5',
+      'Hava Ölçüm İstasyonu': '#E91E63',
+      'Kamera': '#673AB7',
+      'Tarihi/Turistik Yerler': '#FF5722'
+    };
+
+    return {
+      labels: Object.keys(circleStats.typeCounts),
+      datasets: [{
+        data: Object.values(circleStats.typeCounts),
+        backgroundColor: Object.keys(circleStats.typeCounts).map(type => chartColors[type as keyof typeof chartColors] || '#9E9E9E'),
+        borderColor: Object.keys(circleStats.typeCounts).map(type => chartColors[type as keyof typeof chartColors] || '#9E9E9E'),
+        borderWidth: 1
+      }]
+    };
+  };
+
   return (
     <Router>
       <Routes>
@@ -453,68 +538,107 @@ const App: React.FC = () => {
         <Route path="/admin/konum-ekle" element={<KonumEkle />} />
         <Route path="/" element={
           <div className="h-screen flex">
-            {/* Üst menü */}
-            <div className="absolute top-4 left-4 z-10 flex gap-2">
-              {/* Çeper Çiz Butonu */}
+            {/* Harita yüklenirken ortada logo */}
+            {isLoading && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-white">
+                <img src={logo} alt="Logo" className="w-64 h-auto animate-pulse" />
+              </div>
+            )}
+            {/* Sağ üstte logo ve yan yana butonlar */}
+            <div className="absolute top-4 right-4 z-20 flex flex-col items-end">
+              <div className="flex flex-row items-center gap-3">
+                {/* 3 buton: çeper çiz, point/cluster mode, giriş/çıkış */}
+                <div className="flex flex-row gap-2">
+                  {/* Çeper Çiz Butonu */}
+                  <button
+                    onClick={() => {
+                      if (isDrawing) {
+                        exitDrawMode();
+                      } else {
+                        setIsDrawing(true);
+                        setCircleData(null);
+                      }
+                    }}
+                    className={`p-2 rounded-lg shadow-lg transition-colors ${
+                      isDrawing ? 'bg-red-500 text-white' : 'bg-white text-gray-800'
+                    }`}
+                    title={isDrawing ? 'Çizimi İptal Et (Ctrl+Shift)' : 'Çeper Çiz'}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    </svg>
+                  </button>
+
+                  {/* Point View Mode Butonu */}
+                  <button
+                    onClick={() => setIsClusterMode(!isClusterMode)}
+                    disabled={viewState.zoom < 14}
+                    className={`p-2 rounded-lg shadow-lg transition-colors ${
+                      isClusterMode ? 'bg-red-500 text-white' : 'bg-white text-gray-800'
+                    } ${viewState.zoom < 14 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100'}`}
+                    title={viewState.zoom < 14 ? 'Point View Mode için zoom seviyesi yetersiz' : (isClusterMode ? 'Point View Mode\'u Kapat' : 'Point View Mode\'u Aç')}
+                  >
+                    <img src={clusterPointModeIcon} alt="Point View Mode" className={CLUSTER_MODE_ICON_SIZE} />
+                  </button>
+
+                  {/* Login/Logout Butonu */}
+                  {isLoggedIn ? (
+                    <button
+                      onClick={handleLogout}
+                      className="p-2 rounded-lg shadow-lg bg-red-500 text-white hover:bg-red-600 transition-colors"
+                      title="Çıkış Yap"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                      </svg>
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => window.location.href = '/admin/login'}
+                      className="p-2 rounded-lg shadow-lg bg-blue-500 text-white hover:bg-blue-600 transition-colors"
+                      title="Giriş Yap"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                      </svg>
+                    </button>
+                  )}
+                </div>
+                {/* Logo */}
+                <img src={logo} alt="Logo" className="w-28 h-auto ml-4 drop-shadow" />
+              </div>
+              {/* Filtreleme Dropdown Butonu ve İçeriği */}
               <button
-                onClick={() => {
-                  if (isDrawing) {
-                    exitDrawMode();
-                  } else {
-                    setIsDrawing(true);
-                    setCircleData(null);
-                  }
-                }}
-                className={`p-2 rounded-lg shadow-lg transition-colors ${
-                  isDrawing ? 'bg-red-500 text-white' : 'bg-white text-gray-800'
-                }`}
-                title={isDrawing ? 'Çizimi İptal Et (Ctrl+Shift)' : 'Çeper Çiz'}
+                className="w-12 h-12 flex items-center justify-center bg-white rounded-full shadow border border-gray-300 hover:border-red-500 transition mt-2"
+                onClick={() => setDropdownOpen(v => !v)}
+                style={{ outline: 'none' }}
+                aria-label="Filtreleri Aç/Kapat"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                {/* Aşağı/yukarı yön oku (tabanı olmayan üçgen) */}
+                <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <polyline points={dropdownOpen ? '7,18 14,10 21,18' : '7,10 14,18 21,10'} fill="none" stroke="#e11d48" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </button>
-
-              {/* Login/Logout Butonu */}
-              {isLoggedIn ? (
-                <button
-                  onClick={handleLogout}
-                  className="p-2 rounded-lg shadow-lg bg-red-500 text-white hover:bg-red-600 transition-colors"
-                  title="Çıkış Yap"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                  </svg>
-                </button>
-              ) : (
-                <button
-                  onClick={() => window.location.href = '/admin/login'}
-                  className="p-2 rounded-lg shadow-lg bg-blue-500 text-white hover:bg-blue-600 transition-colors"
-                  title="Giriş Yap"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
-                  </svg>
-                </button>
+              {dropdownOpen && (
+                <div className="flex flex-col gap-2 mt-1 p-1 bg-white/80 rounded-xl shadow-lg">
+                  {LOCATION_TYPES.map(type => (
+                    <button
+                      key={type}
+                      onClick={() => toggleFilter(type)}
+                      className={`w-14 h-14 flex items-center justify-center rounded-lg border-2 transition-all
+                        ${filters[type] ? 'border-red-500 bg-gray-100' : 'border-transparent bg-white'}
+                        hover:border-red-500
+                        ${filters[type] ? 'brightness-95' : 'hover:brightness-90'}
+                        active:brightness-75
+                        `}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      <img src={ICONS[type]} alt={type} className={FILTER_ICON_SIZES[type]} />
+                    </button>
+                  ))}
+                </div>
               )}
             </div>
-
-            {/* Sağ panel */}
-            <div className="absolute top-4 right-4 bg-white p-4 rounded-lg shadow-lg max-h-[calc(100vh-32px)] overflow-y-auto z-10">
-              <h2 className="text-lg font-semibold mb-4">Konum Türleri</h2>
-              {LOCATION_TYPES.map(type => (
-                <label key={type} className="flex items-center mb-2">
-                  <input
-                    type="checkbox"
-                    checked={filters[type as keyof typeof filters]}
-                    onChange={() => toggleFilter(type)}
-                    className="mr-2"
-                  />
-                  {type}
-                </label>
-              ))}
-            </div>
-
             {/* Harita */}
             <Map
               ref={mapRef}
@@ -557,36 +681,13 @@ const App: React.FC = () => {
                 />
               )}
               {/* Çeper çizimi için kaynak ve katman */}
-              {isDrawing && startPoint && (
-                <Source
-                  type="geojson"
-                  data={{
-                    type: 'Feature',
-                    properties: {},
-                    geometry: {
-                      type: 'Point',
-                      coordinates: startPoint
-                    }
-                  }}
-                >
-                  <Layer
-                    type="circle"
-                    paint={{
-                      'circle-radius': 8,
-                      'circle-color': '#007cbf',
-                      'circle-stroke-width': 2,
-                      'circle-stroke-color': '#fff'
-                    }}
-                  />
-                </Source>
-              )}
               {previewCircle && (
                 <Source type="geojson" data={previewCircle}>
                   <Layer
                     type="fill"
                     paint={{
                       'fill-color': '#007cbf',
-                      'fill-opacity': 0.1,
+                      'fill-opacity': 0.2,
                       'fill-outline-color': '#007cbf'
                     }}
                   />
@@ -598,7 +699,7 @@ const App: React.FC = () => {
                     type="fill"
                     paint={{
                       'fill-color': '#007cbf',
-                      'fill-opacity': 0.1,
+                      'fill-opacity': 0.2,
                       'fill-outline-color': '#007cbf'
                     }}
                   />
@@ -616,14 +717,7 @@ const App: React.FC = () => {
                 >
                   <div className="bg-white rounded-lg shadow-lg p-4 min-w-[220px] max-w-xs flex flex-col items-center">
                     <Pie
-                      data={{
-                        labels: Object.keys(circleStats.typeCounts),
-                        datasets: [{
-                          data: Object.values(circleStats.typeCounts),
-                          backgroundColor: Object.keys(circleStats.typeCounts).map(t => MARKER_COLORS[t] || '#888'),
-                          borderWidth: 1
-                        }]
-                      }}
+                      data={getChartData()}
                       options={{ plugins: { legend: { display: true, position: 'bottom' } } }}
                       width={180}
                       height={180}
@@ -688,14 +782,7 @@ const App: React.FC = () => {
                 <div className="p-6 flex-1 overflow-y-auto">
                   <div className="flex flex-col items-center">
                     <Pie
-                      data={{
-                        labels: Object.keys(circleStats.typeCounts),
-                        datasets: [{
-                          data: Object.values(circleStats.typeCounts),
-                          backgroundColor: Object.keys(circleStats.typeCounts).map(t => MARKER_COLORS[t] || '#888'),
-                          borderWidth: 1
-                        }]
-                      }}
+                      data={getChartData()}
                       options={{ plugins: { legend: { display: true, position: 'bottom' } } }}
                       width={220}
                       height={220}
