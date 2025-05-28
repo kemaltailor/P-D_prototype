@@ -1,0 +1,136 @@
+{
+  "type": "FeatureCollection",
+  "name": "hava_istasyon",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.52052,
+          38.013184
+        ]
+      },
+      "properties": {
+        "istasyon_adi": "Bosna İstasyonu"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.50566,
+          37.917843
+        ]
+      },
+      "properties": {
+        "istasyon_adi": "Selçuklu İstasyonu"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.459662,
+          37.907138
+        ]
+      },
+      "properties": {
+        "istasyon_adi": "Erenköy İstasyonu"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.52744,
+          37.903952
+        ]
+      },
+      "properties": {
+        "istasyon_adi": "Karkent İstasyonu"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.485458,
+          37.883034
+        ]
+      },
+      "properties": {
+        "istasyon_adi": "Merkez Trafik İstasyonu"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.470254,
+          37.860659
+        ]
+      },
+      "properties": {
+        "istasyon_adi": "Meram İstasyonu"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.517043,
+          37.87001
+        ]
+      },
+      "properties": {
+        "istasyon_adi": "Karatay İstasyonu"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.513969,
+          37.844698
+        ]
+      },
+      "properties": {
+        "istasyon_adi": "Karatay 2 İstasyonu"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          31.419943,
+          38.357237
+        ]
+      },
+      "properties": {
+        "istasyon_adi": "Akşehir İstasyonu"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.459111,
+          38.514783
+        ]
+      },
+      "properties": {
+        "istasyon_adi": "Sarayönü İstasyonu"
+      }
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "Version": 1,
+  "Hash": "L8iITe+uFxwAWDxus80Wt1VRRvrQJUJ2LAK4PlaVeLE=",
+  "Source": "KonyaKBS.API",
+  "BasePath": "_content/KonyaKBS.API",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": [],
+  "Endpoints": []
+}
