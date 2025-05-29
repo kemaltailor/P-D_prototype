@@ -13,6 +13,7 @@ namespace KonyaKBS.API.Data
 
         public DbSet<GeoLocation> GeoLocations { get; set; }
         public DbSet<AdminUser> AdminUsers { get; set; }
+        public DbSet<HatGuzergah> HatGuzergah { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -33,6 +34,14 @@ namespace KonyaKBS.API.Data
                 entity.Property(e => e.Username).IsRequired();
                 entity.Property(e => e.PasswordHash).IsRequired();
                 entity.Property(e => e.CreatedAt).IsRequired();
+            });
+
+            modelBuilder.Entity<HatGuzergah>(entity =>
+            {
+                entity.ToTable("hat_guzergah");
+                entity.HasKey(e => e.id);
+                entity.Property(e => e.hat_no).IsRequired();
+                entity.Property(e => e.geometry).HasColumnType("geometry(Point, 4326)");
             });
 
             // Admin kullanıcısı için seed data

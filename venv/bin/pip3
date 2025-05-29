@@ -1,4 +1,4 @@
-#!/Users/kemalterzi/Desktop/kbs-konya/venv/bin/python3.11
+#!/Users/kemalterzi/Desktop/kbs-konya-2/venv/bin/python3.13
 # -*- coding: utf-8 -*-
 import re
 import sys

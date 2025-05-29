@@ -718,3 +718,4 @@
 /Users/kemalterzi/Desktop/kbs-konya-2/KonyaKBS.API/obj/Debug/net8.0/KonyaKBS.API.pdb
 /Users/kemalterzi/Desktop/kbs-konya-2/KonyaKBS.API/obj/Debug/net8.0/KonyaKBS.API.genruntimeconfig.cache
 /Users/kemalterzi/Desktop/kbs-konya-2/KonyaKBS.API/obj/Debug/net8.0/ref/KonyaKBS.API.dll
+/Users/kemalterzi/Desktop/kbs-konya-2/KonyaKBS.API/obj/Debug/net8.0/KonyaKBS.API.sourcelink.json
